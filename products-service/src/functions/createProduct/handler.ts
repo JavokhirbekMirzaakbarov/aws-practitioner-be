@@ -17,6 +17,10 @@ if (!config.region) {
 
 export const createProduct: APIGatewayProxyHandler = async (event) => {
   try {
+    console.log(
+      "ENVIRONMENT VARIABLES\n" + JSON.stringify(process.env, null, 2)
+    );
+    console.info("EVENT\n" + JSON.stringify(event, null, 2));
     const { title, description, price, count } = JSON.parse(event.body);
     const { error } = productSchema.validate({
       title,
