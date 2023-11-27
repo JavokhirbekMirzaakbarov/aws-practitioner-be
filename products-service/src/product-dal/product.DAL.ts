@@ -2,9 +2,9 @@ import { v4 as uuid4 } from "uuid";
 import DB, { DB_CONFIG } from "@src/db";
 import { Product } from "@src/types/product";
 
-export const createProduct = async (product: Omit<Product, "id" | "count">) => {
+export const createProduct = async (product: Omit<Product, "id">) => {
   try {
-    const { title, description, price } = product;
+    const { title, description, price, count } = product;
     const id = uuid4();
     await DB.put({
       TableName: DB_CONFIG.products,
@@ -16,41 +16,19 @@ export const createProduct = async (product: Omit<Product, "id" | "count">) => {
       },
     }).promise();
 
+    await DB.put({
+      TableName: DB_CONFIG.stocks,
+      Item: {
+        product_id: id,
+        count,
+      },
+      ConditionExpression: "attribute_not_exists(product_id)",
+    }).promise();
+
     return {
       id,
       ...product,
     };
-
-    // await DB.transactWrite({
-    //   TransactItems: [
-    //     {
-    //       Put: {
-    //         TableName: DB_CONFIG.products,
-    //         Item: {
-    //           id,
-    //           title,
-    //           description,
-    //           price,
-    //         },
-    //         ConditionExpression: "attribute_not_exists(id)",
-    //       },
-    //     },
-    //     {
-    //       Put: {
-    //         TableName: DB_CONFIG.stocks,
-    //         Item: {
-    //           product_id: id.count,
-    //         },
-    //         ConditionExpression: "attribute_not_exists(product_id)",
-    //       },
-    //     },
-    //   ],
-    // }).promise();
-
-    // return {
-    //   id,
-    //   ...product,
-    // };
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

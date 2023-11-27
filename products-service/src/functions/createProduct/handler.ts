@@ -17,11 +17,12 @@ if (!config.region) {
 
 export const createProduct: APIGatewayProxyHandler = async (event) => {
   try {
-    const { title, description, price } = JSON.parse(event.body);
+    const { title, description, price, count } = JSON.parse(event.body);
     const { error } = productSchema.validate({
       title,
       description,
       price,
+      count,
     });
 
     if (error) {
@@ -31,6 +32,7 @@ export const createProduct: APIGatewayProxyHandler = async (event) => {
       title,
       description,
       price,
+      count,
     });
 
     return formatSuccessJSONResponse({ product }, 201);
