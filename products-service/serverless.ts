@@ -2,6 +2,7 @@ import type { AWS } from "@serverless/typescript";
 
 import getProductById from "@functions/getProductById";
 import getProductsList from "@functions/getProductsList";
+import createProduct from "@functions/createProduct";
 
 const serverlessConfiguration: AWS = {
   service: "products-service",
@@ -19,9 +20,28 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
     },
+    iam: {
+      role: {
+        statements: [
+          {
+            Effect: "Allow",
+            Action: [
+              "dynamodb:DescribeTable",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:GetItem",
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem",
+              "dynamodb:DeleteItem",
+            ],
+            Resource: "*",
+          },
+        ],
+      },
+    },
   },
   // import the function via paths
-  functions: { getProductsList, getProductById },
+  functions: { getProductsList, getProductById, createProduct },
   package: { individually: true },
   custom: {
     esbuild: {
