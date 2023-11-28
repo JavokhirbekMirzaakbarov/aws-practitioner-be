@@ -1,9 +1,10 @@
+const AWS = require("aws-sdk");
 const {
   DynamoDBClient,
   PutCommand,
+  TransactWriteCommand,
   TransactWriteItemsCommand,
 } = require("@aws-sdk/client-dynamodb");
-const { marshall } = require("@aws-sdk/util-dynamodb");
 
 const products = [
   {
@@ -44,9 +45,13 @@ const products = [
   },
 ];
 
-const DB = new DynamoDBClient({
-  region: "eu-north-1",
-});
+if (!AWS.config.region) {
+  AWS.config.update({
+    region: "eu-central-1",
+  });
+}
+const DB = new DynamoDBClient();
+
 const productTable = "Products";
 const stockTable = "Stocks";
 
@@ -57,26 +62,25 @@ const insertProducts = async () => {
         {
           Put: {
             TableName: productTable,
-            Item: marshall({
+            Item: {
               id: item.id,
               title: item.title,
               description: item.description,
               price: item.price,
-            }),
+            },
           },
         },
         {
           Put: {
             TableName: stockTable,
-            Item: marshall({
+            Item: {
               product_id: item.id,
               count: item.count,
-            }),
+            },
           },
         },
       ],
     };
-
     return DB.send(new TransactWriteItemsCommand(params));
   });
 
