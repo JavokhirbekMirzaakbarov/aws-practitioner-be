@@ -1,5 +1,7 @@
 import type { AWS } from "@serverless/typescript";
 
+import { importProductsFile, importFileParser } from "@functions/index";
+
 const serverlessConfiguration: AWS = {
   service: "import-service",
   frameworkVersion: "3",
@@ -7,7 +9,7 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs14.x",
-    region: "eu-north-1",
+    region: "eu-west-1",
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -21,23 +23,21 @@ const serverlessConfiguration: AWS = {
         statements: [
           {
             Effect: "Allow",
-            Action: [
-              "dynamodb:DescribeTable",
-              "dynamodb:Query",
-              "dynamodb:Scan",
-              "dynamodb:GetItem",
-              "dynamodb:PutItem",
-              "dynamodb:UpdateItem",
-              "dynamodb:DeleteItem",
-            ],
-            Resource: "*",
+            Action: ["s3:ListBucket"],
+            Resource: ["arn:aws:s3:::aws-practitioner-csv-files/*"],
+          },
+          {
+            Effect: "Allow",
+            Action: ["s3:*"],
+            Resource: ["arn:aws:s3:::aws-practitioner-csv-files/*"],
           },
         ],
       },
     },
   },
+
   // import the function via paths
-  functions: {},
+  functions: { importProductsFile, importFileParser },
   package: { individually: true },
   custom: {
     esbuild: {
