@@ -39,7 +39,7 @@ const serverlessConfiguration: AWS = {
             Action: ["sqs:*"],
             Resource: [
               {
-                "Fn:GetAtt": ["catalogItemsQueue", "Arn"],
+                "Fn::GetAtt": ["catalogItemsQueue", "Arn"],
               },
             ],
           },
