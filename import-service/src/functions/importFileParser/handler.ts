@@ -1,11 +1,13 @@
 import { S3Event, S3EventRecord } from "aws-lambda";
-import { S3 } from "aws-sdk";
+import { S3, SQS } from "aws-sdk";
 import csvParser from "csv-parser";
 import { CONFIG } from "@src/constants/config";
 
 const parseCsv = async (event: S3EventRecord) => {
   try {
     const s3 = new S3({ region: CONFIG.region });
+    const sqs = new SQS({ region: CONFIG.region });
+
     const params = {
       Bucket: CONFIG.bucket,
       Key: event.s3.object.key,
@@ -16,7 +18,16 @@ const parseCsv = async (event: S3EventRecord) => {
         .createReadStream()
         .pipe(csvParser())
         .on("data", (data) => {
-          console.log(data);
+          sqs.sendMessage(
+            {
+              QueueUrl: process.env.SQS_URL,
+              MessageBody: JSON.stringify(data),
+            },
+            () => {
+              const { title } = data;
+              console.log("Send message for product", title);
+            }
+          );
         })
         .on("error", (error) => {
           reject(error.message);
