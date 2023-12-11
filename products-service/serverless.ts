@@ -3,6 +3,7 @@ import type { AWS } from "@serverless/typescript";
 import getProductById from "@functions/getProductById";
 import getProductsList from "@functions/getProductsList";
 import createProduct from "@functions/createProduct";
+import catallogBatchProcess from "@functions/catallogBatchProcess";
 
 const serverlessConfiguration: AWS = {
   service: "products-service",
@@ -19,6 +20,9 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
+      SRS_ARN: {
+        Ref: "createProductTopic",
+      },
     },
     iam: {
       role: {
@@ -36,13 +40,23 @@ const serverlessConfiguration: AWS = {
             ],
             Resource: "*",
           },
+          {
+            Effect: "Allow",
+            Action: ["sns:*"],
+            Resource: [{ Ref: "createProductTopic" }],
+          },
         ],
       },
     },
   },
   // import the function via paths
-  functions: { getProductsList, getProductById, createProduct },
-  package: { individually: true },
+  functions: {
+    getProductsList,
+    getProductById,
+    createProduct,
+    catallogBatchProcess,
+  },
+  package: { individually: false },
   custom: {
     esbuild: {
       bundle: true,
@@ -53,6 +67,39 @@ const serverlessConfiguration: AWS = {
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
+    },
+  },
+  resources: {
+    Resources: {
+      createProductTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          TopicName: "PRODUCT_CREATED",
+        },
+      },
+      emailSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "javokhirbek_mirzaakbarov@epam.com",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "createProductTopic",
+          },
+        },
+      },
+      filteredSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "javokhirbek_mirzaakbarov@epam.com",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "createProductTopic",
+          },
+          FilterPolicy: {
+            title: ["ProductOne", "ProductTitle"],
+          },
+        },
+      },
     },
   },
 };
