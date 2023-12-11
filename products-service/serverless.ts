@@ -80,7 +80,7 @@ const serverlessConfiguration: AWS = {
       emailSubscription: {
         Type: "AWS::SNS::Subscription",
         Properties: {
-          Endpoint: "haluk_furkan_kicik@epam.com",
+          Endpoint: "javokhirbek_mirzaakbarov@epam.com",
           Protocol: "email",
           TopicArn: {
             Ref: "createProductTopic",
@@ -90,7 +90,7 @@ const serverlessConfiguration: AWS = {
       filteredSubscription: {
         Type: "AWS::SNS::Subscription",
         Properties: {
-          Endpoint: "haluk_furkan_kicik@epam.com",
+          Endpoint: "javokhirbek_mirzaakbarov@epam.com",
           Protocol: "email",
           TopicArn: {
             Ref: "createProductTopic",
